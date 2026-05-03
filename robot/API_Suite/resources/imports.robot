@@ -11,4 +11,3 @@ Library     OperatingSystem
 Library     FakerLibrary     locale=en_IN
 Library     DateTime
 Library     random
-Variables   config/application_config.yaml
