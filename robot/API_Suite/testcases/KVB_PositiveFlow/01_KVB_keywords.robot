@@ -68,3 +68,81 @@ Library      ../../resources/MongoManager.py     env=dev
     Log To Console     02_Dedupe OTP: ${Validate_OTP}
     Set Test Variable    ${Validate_OTP}
     RETURN    ${Validate_OTP}
+
+03_validate_OTP
+    [Arguments]        ${cookies}    ${client_Id}    ${api_key}    ${app_code}    ${Validate_OTP}
+    [Documentation]    Submit dedupe OTP and return the resolved platformCustomerId.
+    ${gateway_url}=    Get From Dictionary    ${URL_CONFIGS}    ${ENV}
+    Create Session     validate_otp    url=${gateway_url}:${gateway_port}
+    ${headers}=    Build Session Headers    ${cookies}    ${client_Id}    ${api_key}    ${app_code}
+    ${body}=    Create Dictionary    otp=${Validate_OTP}    lenderCustomerId=${lenderCustId}
+    ${response}=        POST On Session    validate_otp    /api/v1/validate-otp    json=${body}    headers=${headers}
+    ${json_data}=       Convert String To Json    ${response.content}
+    ${status_msg}=      Get Value From Json    ${json_data}    status.message
+    ${msg}=             Get From List          ${status_msg}   0
+    ${platform_Id}=     Get Value From Json    ${json_data}    data.platformCustomerId
+    ${platform_custId}=    Get From List    ${platform_Id}    0
+    IF    '${msg}' == 'Customer already exists'
+        Fail    msg=${msg} cannot move forward
+    END
+    Log To Console     03_Validate_OTP: ${msg}
+    Log To Console     platformCustomerId: ${platform_custId}
+    RETURN    ${platform_custId}
+
+04_getCustomer_details
+    [Arguments]        ${cookies}    ${client_Id}    ${api_key}    ${app_code}    ${platform_custId}
+    [Documentation]    Retrieve and log customer profile by platformCustomerId.
+    ${gateway_url}=    Get From Dictionary    ${URL_CONFIGS}    ${ENV}
+    Create Session     get_CustomerDetails    url=${gateway_url}:${gateway_port}
+    ${headers}=    Build Session Headers    ${cookies}    ${client_Id}    ${api_key}    ${app_code}
+    ${params}=     Create Dictionary    platformCustomerId=${platform_custId}
+    ${response}=   GET On Session    get_CustomerDetails    /api/v1/customer    headers=${headers}    params=${params}
+    Should Be Equal As Integers    ${response.status_code}    ${expected_code}
+    ${json_data}=  Convert String To Json    ${response.content}
+    ${status_msg}=    Get Value From Json    ${json_data}    status.message
+    ${msg}=        Get From List          ${status_msg}   0
+    ${name}=       Get Value From Json    ${json_data}    data[0].firstName
+    ${cust_name}=  Get From List          ${name}         0
+    ${pan}=        Get Value From Json    ${json_data}    data[0].pan
+    ${cust_pan}=   Get From List          ${pan}          0
+    Log To Console     04_getCustomerDetails_ById: ${msg}, customerName:${cust_name}, customerPan:${cust_pan}
+
+05_getProduct
+    [Arguments]        ${cookies}    ${client_Id}    ${api_key}    ${app_code}
+    [Documentation]    Fetch available products and return the configured product code.
+    ${gateway_url}=    Get From Dictionary    ${URL_CONFIGS}    ${ENV}
+    Create Session     getProduct_details    url=${gateway_url}:${gateway_port}
+    ${headers}=    Build Session Headers    ${cookies}    ${client_Id}    ${api_key}    ${app_code}
+    ${response}=   GET On Session    getProduct_details    /api/v1/product    headers=${headers}
+    Should Be Equal As Integers    ${response.status_code}    ${expected_code}
+    ${json_data}=  Convert String To Json    ${response.content}
+    ${status_msg}=    Get Value From Json    ${json_data}    status.message
+    ${msg}=        Get From List          ${status_msg}   0
+    Log To Console     05_GetProduct: ${msg}
+    RETURN    ${productCode}
+
+06_loanApplication_Init
+    [Arguments]        ${cookies}    ${client_Id}    ${api_key}    ${app_code}    ${productCode}    ${branchCode}
+    [Documentation]    Initiate loan application and resolve IDs from MongoDB.
+    ${gateway_url}=    Get From Dictionary    ${URL_CONFIGS}    ${ENV}
+    Create Session     LoanApp_init    url=${gateway_url}:${gateway_port}
+    ${headers}=    Build Session Headers    ${cookies}    ${client_Id}    ${api_key}    ${app_code}
+    ${body}=    Create Dictionary
+    ...    pan=${PAN_Number}
+    ...    productCode=${productCode}
+    ...    phoneNumber=${mobile_No}
+    ...    email=${email_id}
+    ${response}=       POST On Session    LoanApp_init    /api/v1/loan-application/apply    json=${body}    headers=${headers}
+    Should Be Equal As Integers    ${response.status_code}    ${expected_code}
+    ${json_data}=  Convert String To Json    ${response.content}
+    ${status_msg}=    Get Value From Json    ${json_data}    status.message
+    ${msg}=        Get From List          ${status_msg}   0
+    ${cust_id}=    MongoManager.Get Customer Id By Pan              ${PAN_Number}
+    ${loanApp_No}=    MongoManager.Get Loan App No By Customer Id    ${cust_id}
+    ${loanApp_Id}=    MongoManager.Get Loan App Id By Loan Number    ${loanApp_No}
+    Set Suite Variable    ${loanApp_No}
+    Set Suite Variable    ${loanApp_Id}
+    Set Suite Variable    ${cust_id}
+    Log to console     06_loanApplication_Init: ${msg}
+    Log To Console     customer_Id: ${cust_id}, loanApp_No: ${loanApp_No}, loanApp_Id: ${loanApp_Id}
+    RETURN    ${loanApp_No}    ${loanApp_Id}    ${cust_id}
