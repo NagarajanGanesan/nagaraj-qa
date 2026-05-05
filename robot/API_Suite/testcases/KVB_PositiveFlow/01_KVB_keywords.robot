@@ -146,3 +146,63 @@ Library      ../../resources/MongoManager.py     env=dev
     Log to console     06_loanApplication_Init: ${msg}
     Log To Console     customer_Id: ${cust_id}, loanApp_No: ${loanApp_No}, loanApp_Id: ${loanApp_Id}
     RETURN    ${loanApp_No}    ${loanApp_Id}    ${cust_id}
+
+07_emailInitiate
+    [Arguments]        ${cookies}    ${client_Id}    ${api_key}    ${app_code}    ${loanApp_No}
+    [Documentation]    Trigger email OTP for KYC and return the mock OTP value.
+    ${gateway_url}=    Get From Dictionary    ${URL_CONFIGS}    ${ENV}
+    Create Session     email_initiate    url=${gateway_url}:${gateway_port}
+    ${headers}=    Build Session Headers    ${cookies}    ${client_Id}    ${api_key}    ${app_code}
+    ${body}=    Create Dictionary    loanApplicationNo=${loanApp_No}    email=${email_Id}
+    ${response}=       POST On Session    email_initiate    /api/v1/kyc/initiate-email    json=${body}    headers=${headers}
+    Should Be Equal As Integers    ${response.status_code}    ${expected_code}
+    ${json_data}=  Convert String To Json    ${response.content}
+    ${status_msg}=    Get Value From Json    ${json_data}    status.message
+    ${msg}=        Get From List          ${status_msg}   0
+    ${email_OTP}=    Set Variable    12345
+    Log To Console     07_emailInitiate: ${msg}
+    RETURN    ${email_OTP}
+
+08_emailValidate
+    [Arguments]        ${cookies}    ${client_Id}    ${api_key}    ${app_code}    ${loanApp_No}    ${email_OTP}
+    [Documentation]    Validate email OTP to complete KYC.
+    ${gateway_url}=    Get From Dictionary    ${URL_CONFIGS}    ${ENV}
+    Create Session     email_validate    url=${gateway_url}:${gateway_port}
+    ${headers}=    Build Session Headers    ${cookies}    ${client_Id}    ${api_key}    ${app_code}
+    ${body}=    Create Dictionary    loanApplicationNo=${loanApp_No}    email=${email_Id}    otp=${email_OTP}
+    ${response}=       POST On Session    email_validate    /api/v1/kyc/validate-email    json=${body}    headers=${headers}
+    Should Be Equal As Integers    ${response.status_code}    ${expected_code}
+    ${json_data}=  Convert String To Json    ${response.content}
+    ${status_msg}=    Get Value From Json    ${json_data}    status.message
+    ${msg}=        Get From List          ${status_msg}   0
+    Log To Console     08_emailValidate: ${msg}
+
+09_getCodeValue
+    [Arguments]        ${cookies}    ${client_Id}    ${api_key}    ${app_code}
+    [Documentation]    Retrieve code values used in loan application dropdowns.
+    ${gateway_url}=    Get From Dictionary    ${URL_CONFIGS}    ${ENV}
+    Create Session     get_CodeValue    url=${gateway_url}:${gateway_port}
+    ${headers}=    Build Session Headers    ${cookies}    ${client_Id}    ${api_key}    ${app_code}
+    ${params}=     Create Dictionary    codeId=${codeValue_Id}
+    ${response}=   GET On Session    get_CodeValue    /api/v1/codeValues    headers=${headers}    params=${params}
+    Should Be Equal As Integers    ${response.status_code}    ${expected_code}
+    ${json_data}=  Convert String To Json    ${response.content}
+    ${status_msg}=    Get Value From Json    ${json_data}    status.message
+    ${msg}=        Get From List          ${status_msg}   0
+    Log To Console     09_CodeValues: ${msg}
+
+10_updateLoanApp
+    [Arguments]        ${cookies}    ${client_Id}    ${api_key}    ${app_code}    ${loanApp_No}
+    [Documentation]    Update loan application with purpose of loan.
+    ${gateway_url}=    Get From Dictionary    ${URL_CONFIGS}    ${ENV}
+    Create Session     LoanApp_update    url=${gateway_url}:${gateway_port}
+    ${headers}=    Build Session Headers    ${cookies}    ${client_Id}    ${api_key}    ${app_code}
+    ${body}=    Create Dictionary
+    ...    loanApplicationNo=${loanApp_No}
+    ...    purposeOfLoan=${2}
+    ${response}=       PUT On Session    LoanApp_update    /api/v1/loan-application/update    json=${body}    headers=${headers}
+    Should Be Equal As Integers    ${response.status_code}    ${expected_code}
+    ${json_data}=  Convert String To Json    ${response.content}
+    ${status_msg}=    Get Value From Json    ${json_data}    status.message
+    ${msg}=        Get From List          ${status_msg}   0
+    Log To Console     10_UpdateLoanApplication: ${msg}
