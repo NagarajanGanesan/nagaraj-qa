@@ -206,3 +206,49 @@ Library      ../../resources/MongoManager.py     env=dev
     ${status_msg}=    Get Value From Json    ${json_data}    status.message
     ${msg}=        Get From List          ${status_msg}   0
     Log To Console     10_UpdateLoanApplication: ${msg}
+
+11_getCust_BankDetail
+    [Arguments]        ${cookies}    ${client_Id}    ${api_key}    ${app_code}    ${platform_custId}
+    [Documentation]    Retrieve saved bank accounts for the customer.
+    ${gateway_url}=    Get From Dictionary    ${URL_CONFIGS}    ${ENV}
+    Create Session     get_CustBankDetails    url=${gateway_url}:${gateway_port}
+    ${headers}=    Build Session Headers    ${cookies}    ${client_Id}    ${api_key}    ${app_code}
+    ${response}=   GET On Session    get_CustBankDetails    /api/v1/customer/bankAccounts/${platform_custId}    headers=${headers}
+    Should Be Equal As Integers    ${response.status_code}    ${expected_code}
+    ${json_data}=  Convert String To Json    ${response.content}
+    ${status_msg}=    Get Value From Json    ${json_data}    status.message
+    ${msg}=        Get From List          ${status_msg}   0
+    Log To Console     11_Get_CustomerBank_Details: ${msg}
+
+12_create_BankInt
+    [Arguments]        ${loanApp_No}    ${cookies}    ${client_Id}    ${api_key}    ${app_code}
+    [Documentation]    Link a bank account to the loan application.
+    ${gateway_url}=    Get From Dictionary    ${URL_CONFIGS}    ${ENV}
+    Create Session     Bank_Init    url=${gateway_url}:${gateway_port}
+    ${headers}=    Build Session Headers    ${cookies}    ${client_Id}    ${api_key}    ${app_code}
+    ${data}=    Create Dictionary
+    ...    loanApplicationNo=${loanApp_No}
+    ...    bankAccountNumber=${bankAccountNo}
+    ...    ifscCode=${ifsc_code}
+    ...    bankName=${bankName}
+    ...    bankAccountType=${bankAccountType}
+    ...    accountHolderName=${accountHolderName}
+    ${response}=       POST On Session    Bank_Init    /api/v1/bank/init    json=${data}    headers=${headers}
+    Should Be Equal As Integers    ${response.status_code}    ${expected_code}
+    ${json_data}=  Convert String To Json    ${response.content}
+    ${status_msg}=    Get Value From Json    ${json_data}    status.message
+    ${msg}=        Get From List          ${status_msg}   0
+    Log To Console     12_Loan Bank Acc Init: ${msg}
+
+Logout
+    [Arguments]    ${cookies}    ${client_Id}    ${api_key}    ${app_code}
+    [Documentation]    Invalidate the active session.
+    ${gateway_url}=    Get From Dictionary    ${URL_CONFIGS}    ${ENV}
+    Create Session     logout    url=${gateway_url}:${gateway_port}
+    ${headers}=    Build Session Headers    ${cookies}    ${client_Id}    ${api_key}    ${app_code}
+    ${response}=   GET On Session    logout    /api/v1/auth/logout    headers=${headers}
+    Should Be Equal As Integers    ${response.status_code}    ${expected_code}
+    ${json_data}=  Convert String To Json    ${response.content}
+    ${status_msg}=    Get Value From Json    ${json_data}    status.message
+    ${msg}=        Get From List          ${status_msg}   0
+    Log To Console    user: ${msg}
