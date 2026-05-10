@@ -4,7 +4,7 @@ Resource     ../../../keywords/common.robot
 *** Variables ***
 # Valid data
 ${valid_channel_id}          1
-${valid_app_code}            17fbab61-e43c-4e1e-a1e9-b26bf60cf3b5
+${valid_app_code}            17fbab61-e43c-4e1e-a1e9-xxxxx
 ${valid_rate_limit}          20
 ${valid_period_seconds}      10
 # Invalid / boundary data

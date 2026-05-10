@@ -30,8 +30,7 @@ ${periodSec}        10
 
 #Create_Permission
 ${EXCEL_PATH}      ${CURDIR}\\dataDriven\\Auth_Permission.xlsx
-${SHEET_NAME}      Sheet1    #Customise     #authService     commonServiceAll     lenderPortal     distributorPortal     productAssetLimit
-# ...                ltvAssetLimit    product    fundLimit
+${SHEET_NAME}      Sheet1  
 
 *** Keywords ***
 01_Partner_product_config_Reg
@@ -105,8 +104,6 @@ ${SHEET_NAME}      Sheet1    #Customise     #authService     commonServiceAll   
     ...        status=${True}
     ...        email=${email}
     ...        application_id=${application_id}
-    # ...        employee_id=
-    # ...        branch_code=
 
     ${headers}         Create Dictionary    Content-Type=application/json
     ${response}        POST On Session      create_user     /api/v1/auth/user     json=${body}     headers=${headers}
@@ -125,9 +122,6 @@ ${SHEET_NAME}      Sheet1    #Customise     #authService     commonServiceAll   
     [Arguments]        ${application_Id}
     ${Auth_url}=       Get From Dictionary    ${URL_CONFIGS}    ${ENV}
     Create Session     create_role     ${Auth_url}:${Auth_port}
-    # ${app_id_list}=    Create List    ${application_Id}
-
-    # Convert To String    ${application_Id}
 
     ${body}    Create Dictionary
     ...        status=${True}

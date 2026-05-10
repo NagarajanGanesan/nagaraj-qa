@@ -55,9 +55,6 @@ ${channel_id's count}     147
     ${path_count}      Get Length    ${api_paths}
     ${method_count}    Get Length    ${api_methods}
     Log To Console     Total Service ID: ${service_count}
-    # Log To Console     API Names: ${name_count}
-    # Log To Console     API Paths: ${path_count}
-    # Log To Console     API Methods: ${method_count}
 
     ${channel_id's}=    Create List    #Creating a empty channel id list to store channel ids
 
@@ -83,8 +80,6 @@ ${channel_id's count}     147
             ${channel_id}      Get From List     ${id}     0
             ${name}            Get Value From Json     ${json_data}     data.api_channel_name   
             ${channelName}     Get From List     ${name}     0
-            # Log To Console     Channel-id: ${channel_id}
-            # Log To Console     Service-name: ${channelName}
 
             Append To List    ${channel_id's}    ${channel_id}
         END
@@ -139,8 +134,6 @@ ${channel_id's count}     147
 03_Channel_Mapping_Reg
     [Arguments]        ${channel_id's count}    ${app_code}     ${channel_id's}
     [Documentation]    channel-mapping rate limit check
-    # ${gateway_url}=    Get From Dictionary    ${URL_CONFIGS}    ${ENV}
-    # Create Session     create_channelMap      ${gateway_url}:${gateway_port}
     Create Session      create_channelMap         ${URL}    verify=true
 
     ${channelMap_ids}     Create List       #Creating empty list to store channel mapping ids
@@ -332,14 +325,6 @@ ${channel_id's count}     147
     ${Auth_url}=       Get From Dictionary    ${URL_CONFIGS}    ${ENV}
     Create Session     permission_role_mapping     ${Auth_url}:${Auth_port}
     ${headers}         Create Dictionary    Content-Type=application/json
-
-    #Database Connection and get details for Json payload
-    # ${db}=    Get From Dictionary    ${DB_CONFIGS}    ${ENV}
-    # Connect To Database    psycopg2     ${db.name}     ${db.Username}     ${db.Password}     ${db.Host}     ${db.Port}    None    
-    # ${permission_table}       Query     SELECT count(*) FROM ${schemeName}.permissions;
-    # ${id}                     Evaluate    [item[0] for item in ${permission_table}]
-    # ${permissionId_count}     Get From List    ${id}    0
-    # Disconnect From Database
         ${permissionId_count}     Get Length    ${permission_id's}
 
         FOR    ${i}    IN RANGE    ${permissionId_count}

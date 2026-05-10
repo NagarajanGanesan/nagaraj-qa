@@ -45,10 +45,6 @@ App Code Decryption True
 *** Keywords ***
 # ─── AES-256-GCM Helper Keywords ────────────────────────────────────────────
 # Gateway uses AES-256-GCM: 12-byte random nonce, 16-byte auth tag.
-# Wire format: base64(nonce[12] + ciphertext + tag[16]).
-# Matches xxxEncryption(AesMode.GCM) in SessionTokenAuthGatewayFilter and ApiChannelLocatorImpl.
-# All gateway POST/PUT requests are encrypted; all gateway responses are decrypted.
-# ${AES_KEY_B64} must match gateway.aes-key from config-server.
 
 Get Credentials From DB
     [Documentation]    Reads api_key and client_id from partner_product_config for the configured ${app_code}.

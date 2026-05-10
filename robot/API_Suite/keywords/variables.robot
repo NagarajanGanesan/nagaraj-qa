@@ -4,7 +4,7 @@ Resource    ../resources/imports.robot
 
 *** Variables ***
 # Override at runtime:  robot --variable ENV:qa  OR  robot --variable ENV:local
-${ENV}             dev
+${ENV}             qa
 ${schemeName}      xxx
 
 ${LOCAL_URL}       http://localhost
@@ -97,7 +97,7 @@ ${server_err_code}=             500
 ${unauthorized_code}=           401
 
 #MongoDB
-${MONGODB_URL}          mongodb://localhost:27017/
+${MONGODB_URL}          mongodb://localhost:xxxx/
 ${MONGODB_NAME}         db_name_db
 
 # Validations and Regex
