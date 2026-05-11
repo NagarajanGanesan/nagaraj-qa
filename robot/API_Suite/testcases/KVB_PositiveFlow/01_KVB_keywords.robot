@@ -240,6 +240,108 @@ Library      ../../resources/MongoManager.py     env=dev
     ${msg}=        Get From List          ${status_msg}   0
     Log To Console     12_Loan Bank Acc Init: ${msg}
 
+13_CAMS_Fetch_initiate
+    [Arguments]       ${cookies}     ${client_Id}     ${api_key}     ${app_code}     ${productCode}       ${loanApp_No}
+    ${gateway_url}=    Get From Dictionary    ${URL_CONFIGS}    ${ENV}
+    Create Session     CAMS_initiate          url= ${gateway_url}:${gateway_port}
+
+    ${headers}         Create Dictionary    Content-Type=application/json
+        ...    Cookie=${cookies}
+        ...    CAPTIX-CLIENT-ID=${client_Id}     
+        ...    CAPTIX-API-KEY=${api_key}     
+        ...    app-code=${app_code}
+
+
+    ${data}             Create Dictionary  
+    ...    loanApplicationNo=${loanApp_No}     
+    ...    pan=${PAN_Number}    
+    # ...    emailId=${email_Id}     
+    ...    phoneNumber=${mobile_No}     
+    ...    source=${CAM_source}
+
+    ${response}            POST On Session           CAMS_initiate     /api/v1/fetch/mutual-funds/initiate-otp     json=${data}     headers=${headers}
+    ${status_code}=        Convert To String         ${response.status_code}
+    Should Be Equal        ${status_code}            ${expected_code}
+    ${json_data}           Convert String To Json    ${response.content}
+    ${fetchID}             Get Value From Json       ${json_data}      data.referenceId
+    ${CAMS_referFetchID}   Get From List     ${fetchID}    0
+    Log To Console         13_CAMS_ReferFetchID: ${CAMS_referFetchID}
+
+    RETURN     ${CAMS_referFetchID}
+
+13_Kfintech_Fetch_initiate
+    [Arguments]     ${cookies}     ${client_Id}     ${api_key}     ${app_code}     ${productCode}       ${loanApp_No}
+    [Documentation]     POST request for fetch/initiate Otp - KFintech
+    ${gateway_url}=    Get From Dictionary    ${URL_CONFIGS}    ${ENV}
+    Create Session     Kfintech_initiate      url= ${gateway_url}:${gateway_port}
+
+    ${PAN_Number}       Set Variable     AQQPS7576R
+    ${mobile_No}        Set Variable     9239874560
+    ${source}           Set Variable     KFINTECH
+
+    ${headers}         Create Dictionary    Content-Type=application/json
+        ...    Cookie=${cookies}
+        ...    CAPTIX-CLIENT-ID=${client_Id}     
+        ...    CAPTIX-API-KEY=${api_key}     
+        ...    app-code=${app_code}
+
+    ${data}             Create Dictionary    
+    ...    loanApplicationNo=${loanApp_No}     
+    ...    pan=${PAN_Number}    
+    # ...    emailId=${email_Id}  
+    ...    phoneNumber=${mobile_No}     
+    ...    source=${Kfintech_source}
+
+    ${response}             POST On Session           Kfintech_initiate     /api/v1/fetch/mutual-funds/initiate-otp     json=${data}     headers=${headers}
+    ${status_code}=         Convert To String         ${response.status_code}
+    Should Be Equal         ${status_code}            ${expected_code}
+    ${json_data}            Convert String To Json    ${response.content}
+    ${fetchID}              Get Value From Json       ${json_data}      data.referenceId
+    ${KFin_referFetchID}    Get From List     ${fetchID}    0
+    Log To Console          13_KFin_ReferFetchID: ${KFin_referFetchID}
+
+    RETURN     ${KFin_referFetchID}
+
+14_CAMS_Fetch_Validate OTP
+    [Arguments]         ${cookies}     ${client_Id}     ${api_key}     ${app_code}    ${CAMS_referFetchID}
+    [Documentation]     Validate CAMS Fetch - OTP Verification(CAMS)
+    ${gateway_url}=     Get From Dictionary    ${URL_CONFIGS}    ${ENV}
+    Create Session      CAMS_validate          url= ${gateway_url}:${gateway_port}
+
+    ${params}=          Create Dictionary    fetchRefId=${CAMS_referFetchID}
+    ${headers}          Create Dictionary    Content-Type=application/json
+        ...    Cookie=${cookies}
+        ...    CAPTIX-CLIENT-ID=${client_Id}     
+        ...    CAPTIX-API-KEY=${api_key}     
+        ...    app-code=${app_code}
+
+    ${data}             Create Dictionary         otp=12345
+    ${response}         POST On Session           CAMS_validate     /api/v1/fetch/mutual-funds/validate-otp     json=${data}     headers=${headers}     params=${params}
+    ${status_code}=     Convert To String         ${response.status_code}
+    Should Be Equal     ${status_code}            ${expected_code}
+    ${json_data}=       Convert String To Json    ${response.content}
+
+    ${scheme_wrapper}=    Get Value From Json     ${json_data}         data.customerSchemeDetails
+    ${scheme_list}=       Get From List           ${scheme_wrapper}    0
+
+    ${length}=    Get Length    ${scheme_list}
+    Log To Console    CAMS_Total = ${length}
+
+    FOR    ${index}    IN RANGE    ${length}
+        ${row}=    Get From List    ${scheme_list}    ${index}
+        ${id}=     Get From Dictionary    ${row}    id
+        Log To Console    customerSchemeDetails[${index}].id = ${id}
+    END
+
+    IF    '${status_code}' == '${expected_code}'
+        ${response}         POST On Session           CAMS_validate     /api/v1/fetch/mutual-funds/validate-otp     json=${data}     headers=${headers}     params=${params}     expected_status=${incorrect_expected_code}
+        ${json_data}        Convert String To Json    ${response.content}   
+    END
+
+    ${status_msg}      Get Value From Json    ${json_data}    status.message
+    ${msg}             Get From List          ${status_msg}     0
+    Log To Console     14_CAMS_Fetch_Validate: ${msg}
+
 Logout
     [Arguments]    ${cookies}    ${client_Id}    ${api_key}    ${app_code}
     [Documentation]    Invalidate the active session.
