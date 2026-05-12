@@ -1,8 +1,0 @@
-triton_url: https://www.google.com/
-browser: chrome
-
-
-#chrome_options
-chrome_options:
-  - --headless
-  - --disable-gpu
