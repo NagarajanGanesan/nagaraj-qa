@@ -8,6 +8,7 @@ operation_maker_Authentication
     ${username}    Set Variable       operation_maker_lead
     ${password}    Set Variable       admin@1234
     Obtain_Auth_Token    ${username}    ${password}
+
 *** Variables ***          
 ${appId}               ${Anchor_App_id}
 ${bankAcctNumber}      2038309487380
@@ -18,7 +19,6 @@ ${bankIfscCode}        IOBA0000281
 ${bankName}            INDIAN OVERSEAS BANK
 ${benName}             HARI
 ${benType}             Dealer
-
 
 *** Test Cases ***
 TC_BD01_Beneficiary_create

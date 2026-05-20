@@ -8,6 +8,7 @@ CPA_Authentication
     ${username}    Set Variable       cpa_lead
     ${password}    Set Variable       admin@1234
     Obtain_Auth_Token    ${username}    ${password}
+
 *** Variables ***
 ${MinVin}           12             #Months
 ${MinPur}           10000  
@@ -15,6 +16,7 @@ ${ProPan}           Required
 ${ProOvd}           Required
 ${BusPan}           Required
 ${GstCert}          Required 
+
 *** Test Cases ***                                                     appId                value                    cnMasterId                       
 TC_CN_01_Min Vintage with anchor                               ${Anchor_App_id}            ${MinVin}                    263                 
 TC_CN_02_Min Monthly Purchase                                  ${Anchor_App_id}            ${MinPur}                    266    

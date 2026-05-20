@@ -8,6 +8,7 @@ CPA_Authentication
     ${username}    Set Variable       cpa_lead
     ${password}    Set Variable       admin@1234
     Obtain_Auth_Token    ${username}    ${password}
+    
 *** Variables ***
 ${adhocProgLimit}              ${50000}
 ${anchorOnboardingDate}        2021-08-12
