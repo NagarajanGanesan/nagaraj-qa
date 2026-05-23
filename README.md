@@ -1,3 +1,18 @@
+# nagaraj-qa
+
+> Personal QA automation portfolio — API and UI test suites for fintech lending workflows.
+> Built with Robot Framework + Python.
+
+<p>
+  <img src="https://img.shields.io/badge/Robot%20Framework-000000?style=flat-square&logo=robotframework&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Domain-Fintech%20Lending-success?style=flat-square"/>
+  <img src="https://img.shields.io/badge/Status-Active-brightgreen?style=flat-square"/>
+  <img src="https://img.shields.io/badge/License-MIT-blue?style=flat-square"/>
+</p>
+
+---
+
 ## 👋 About
 
 I'm **Nagaraj**, a QA Automation Engineer with **4+ years** of experience automating mission-critical lending platforms (LOS, LMS, LAMF) at NBFC and fintech organizations. This repo is my personal sandbox for building reusable Robot Framework patterns I apply to real fintech work.
